@@ -1,37 +1,31 @@
-name: CI Build 
+name: CI Build and Deploy
 
 on:
   push:
     branches: [ main ]
-  # FIX: A colon is required here for 'workflow_dispatch'
-  workflow_dispatch: 
+  workflow_dispatch:
 
 jobs:
-  build-and-push:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v2
-
-      - name: Deploy to Azure VM
+      - name: Deploy to VM and restart stack
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.AZURE_VM_IP }}
           username: api_avengers
           key: ${{ secrets.AZURE_VM_KEY }}
           script: |
-            # The indentation for the 'script' block commands needs to be correct.
-            # In your original, 'docker compose down' and 'git pull origin main'
-            # were indented too far, making them invalid YAML structure.
+            set -e
             cd ./asif/login_node_deploy
-            docker compose down
-
+            # Stop current stack
+            docker compose down --remove-orphans || true
+            # Ensure clean images before rebuild (your request)
+            docker image prune -af || true
+            # Pull latest repo changes
             git pull origin main
-            
+            # Rebuild and start in detached mode
             docker compose up --build -d
