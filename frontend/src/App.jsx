@@ -46,7 +46,7 @@ export default function App() {
     <div style={{ padding: 20, fontFamily: 'Arial, sans-serif' }}>
       <h2>Login App</h2>
       <div style={{ maxWidth: 420 }}>
-        <input value={email} onChange={e => setEmail(e.target.value)} placeholder="email" />
+        <input value={email} onChange={e => setEmail(e.target.value)} placeholder="email OR Username!!" />
         <br />
         <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="password" />
         <br />
