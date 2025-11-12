@@ -1,31 +1,41 @@
-name: CI Build and Deploy
+name: Build and Deploy
 
 on:
   push:
     branches: [ main ]
-  workflow_dispatch:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+
     steps:
-      - name: Checkout
+      # 1️⃣ Checkout your code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Deploy to VM and restart stack
+      # 2️⃣ Set up QEMU (for multi-arch builds)
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+
+      # 3️⃣ Set up Python for running tests
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+
+
+      # 8️⃣ Deploy to Azure VM over SSH
+      - name: Deploy to Azure VM
         uses: appleboy/ssh-action@v0.1.9
         with:
           host: ${{ secrets.AZURE_VM_IP }}
           username: api_avengers
           key: ${{ secrets.AZURE_VM_KEY }}
           script: |
-            set -e
             cd ./asif/login_node_deploy
-            # Stop current stack
-            docker compose down --remove-orphans || true
-            # Ensure clean images before rebuild (your request)
-            docker image prune -af || true
-            # Pull latest repo changes
+            docker compose down
+
             git pull origin main
-            # Rebuild and start in detached mode
+            
             docker compose up --build -d
