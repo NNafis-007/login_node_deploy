@@ -1,3 +1,4 @@
+#old docker compose yaml
 services:
   db:
     container_name: login_db
@@ -39,6 +40,7 @@ services:
     build:
       context: ./frontend
     depends_on:
+      - backend
     networks:
       - app-net
 
